@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/",
-    "postinstall": "node scripts/vendor.mjs"
+    "postinstall": "node scripts/vendor.mjs",
+    "build": "node scripts/build-site.mjs"
   },
   "author": "",
   "license": "GPL-3.0-or-later",

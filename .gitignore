@@ -3,3 +3,5 @@ node_modules/
 web-app/vendor/
 # Generated: node extension/build.mjs
 extension/dist/
+web-app/dist/
+deploy/.cloudflare/

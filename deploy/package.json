@@ -1,0 +1,14 @@
+{
+  "name": "stockfish-deploy",
+  "private": true,
+  "description": "Cloudflare deployment of the web app to stockfish.humza.website",
+  "scripts": {
+    "deploy": "npm run build --prefix ../web-app && cf deploy",
+    "check": "npm run build --prefix ../web-app && cf deploy --dry-run"
+  },
+  "devDependencies": {
+    "cf": "^1.0.0-beta.19",
+    "wrangler": "^4.151.3"
+  },
+  "type": "module"
+}
