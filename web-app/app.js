@@ -6,6 +6,23 @@ import {
 } from './chess-utils.js';
 
 const $ = (id) => document.getElementById(id);
+const readSaved = (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
+const preferences = readSaved('stockfish-preferences') || {};
+document.documentElement.dataset.theme = preferences.theme === 'dark' ? 'dark' : 'light';
+let showHints = preferences.hints !== false;
+let toastTimer;
+function toast(message) {
+  $('toast').textContent = message;
+  $('toast').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('toast').hidden = true; }, 2600);
+}
+function savePreferences() {
+  try { localStorage.setItem('stockfish-preferences', JSON.stringify({ theme: document.documentElement.dataset.theme, hints: showHints, depth: $('depth').value, multipv: $('multipv').value })); } catch { /* Storage may be unavailable in private browsing. */ }
+}
+if (Number(preferences.depth) >= 8 && Number(preferences.depth) <= 30) $('depth').value = preferences.depth;
+if (['1', '3', '5'].includes(String(preferences.multipv))) $('multipv').value = preferences.multipv;
+$('depth-out').textContent = $('depth').value;
 
 // Outline glyph, filled glyph. U+FE0E forces text (not emoji) rendering.
 const GLYPHS = {
@@ -33,6 +50,7 @@ const currentFen = () => (state.ply === 0 ? state.startFen : state.moves[state.p
 function pieceEl(code) {
   const el = document.createElement('div');
   el.className = `piece ${code[0]}`;
+  el.setAttribute('aria-hidden', 'true');
   const [line, fill] = GLYPHS[code[1]];
   el.innerHTML = `<span class="fill">${fill}${VS}</span><span class="line">${line}${VS}</span>`;
   return el;
@@ -46,6 +64,7 @@ function showError(msg) {
 
 const boardEl = $('board');
 const squareEls = {};
+let previousPieces = {};
 
 function displaySquares() {
   const ranks = state.orientation === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
@@ -54,6 +73,7 @@ function displaySquares() {
 }
 
 function buildBoard() {
+  previousPieces = {};
   boardEl.innerHTML = '';
   $('eval-bar').classList.toggle('flipped', state.orientation === 'b');
   const order = displaySquares();
@@ -63,6 +83,8 @@ function buildBoard() {
     const rank = Number(sq[1]);
     el.className = `sq ${(fileIdx + rank) % 2 === 0 ? 'light' : 'dark'}`;
     el.dataset.square = sq;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
     if (i % 8 === 0) el.insertAdjacentHTML('beforeend', `<span class="coord rank">${rank}</span>`);
     if (i >= 56) el.insertAdjacentHTML('beforeend', `<span class="coord file">${sq[0]}</span>`);
     boardEl.appendChild(el);
@@ -96,7 +118,18 @@ function renderBoard() {
     el.classList.toggle('target', targets.includes(sq));
     el.classList.toggle('capture', targets.includes(sq) && !!pieces[sq]);
     el.classList.toggle('check', sq === checkSq);
+    el.setAttribute('aria-label', `${sq}${pieces[sq] ? ` ${pieces[sq][0] === 'w' ? 'White' : 'Black'} ${ { K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight', P: 'pawn' }[pieces[sq][1]]}` : ' empty'}${targets.includes(sq) ? ', legal move' : ''}`);
+    el.setAttribute('aria-pressed', String(sq === state.selected));
+    if (pieces[sq] && pieces[sq] !== previousPieces[sq] && !state.editing && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const from = Object.keys(previousPieces).find((source) => previousPieces[source] === pieces[sq] && pieces[source] !== previousPieces[source]);
+      if (from) {
+        const sourceRect = squareEls[from].getBoundingClientRect();
+        const destRect = el.getBoundingClientRect();
+        el.querySelector('.piece').animate([{ transform: `translate(${sourceRect.x - destRect.x}px, ${sourceRect.y - destRect.y}px)` }, { transform: 'translate(0, 0)' }], { duration: 260, easing: 'cubic-bezier(.22,1,.36,1)' });
+      }
+    }
   }
+  previousPieces = { ...pieces };
   renderArrows();
 }
 
@@ -111,7 +144,7 @@ function squareCenter(sq) {
 function renderArrows() {
   const layer = $('arrow-layer');
   layer.innerHTML = '';
-  if (state.editing || !state.analysis || state.analysis.fen !== currentFen()) return;
+  if (!showHints || state.editing || !state.analysis || state.analysis.fen !== currentFen()) return;
   // Draw alternatives first so the best move sits on top.
   const lines = state.lines.filter(Boolean);
   [...lines].reverse().forEach((line) => {
@@ -143,6 +176,7 @@ function pickPromotion(color) {
   return new Promise((resolve) => {
     for (const t of ['Q', 'R', 'B', 'N']) {
       const b = document.createElement('button');
+      b.setAttribute('aria-label', `Promote to ${({ Q: 'queen', R: 'rook', B: 'bishop', N: 'knight' })[t]}`);
       b.appendChild(pieceEl(color + t));
       b.onclick = (e) => { e.stopPropagation(); promo.hidden = true; resolve(t.toLowerCase()); };
       promo.appendChild(b);
@@ -252,6 +286,8 @@ $('btn-flip').onclick = () => {
   buildBoard();
   renderBoard();
   renderAnalysis();
+  updateWorkspace();
+  saveSession();
 };
 $('btn-reset').onclick = () => loadPosition(START_FEN);
 
@@ -262,6 +298,8 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'Home') goTo(0);
   else if (e.key === 'End') goTo(state.moves.length);
   else if (e.key === 'f') $('btn-flip').click();
+  else if (e.key === 'a') $('btn-hints').click();
+  else if (e.key === 'Escape') { state.selected = null; renderBoard(); }
   else return;
   e.preventDefault();
 });
@@ -287,6 +325,7 @@ function buildPalette() {
   for (const t of tools) {
     const b = document.createElement('button');
     b.dataset.tool = t;
+    b.setAttribute('aria-label', t === 'x' ? 'Erase piece' : `${t[0] === 'w' ? 'White' : 'Black'} ${({ K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight', P: 'pawn' })[t[1]]}`);
     if (t === 'x') {
       // Eraser fills the last column, beside both rows of pieces.
       b.className = 'trash';
@@ -409,7 +448,11 @@ function renderMoves() {
     const span = document.createElement('span');
     span.className = `mv${i + 1 === state.ply ? ' cur' : ''}`;
     span.textContent = m.san;
+    span.tabIndex = 0;
+    span.setAttribute('role', 'button');
+    span.setAttribute('aria-label', `Move ${i + 1}: ${m.san}`);
     span.onclick = () => goTo(i + 1);
+    span.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); span.click(); } };
     el.appendChild(span);
     if (!whiteToMove) moveNo++;
     whiteToMove = !whiteToMove;
@@ -447,6 +490,7 @@ function renderAnalysis() {
 
   const linesEl = $('lines');
   const over = gameOverText();
+  $('btn-play-best').disabled = state.editing || !!over || !state.lines[0] || state.analysis?.fen !== currentFen();
 
   if (state.editing) {
     $('best-label').textContent = 'Setting up a position';
@@ -491,6 +535,12 @@ function renderAnalysis() {
     li.innerHTML = `<span class="score${neg ? ' neg' : ''}"></span><span class="pv"></span>`;
     li.querySelector('.score').textContent = formatScore(s);
     li.querySelector('.pv').textContent = pvToSan(a.fen, line.pv);
+    li.tabIndex = 0;
+    li.setAttribute('role', 'button');
+    li.title = 'Play the first move of this line';
+    li.setAttribute('aria-label', `Play ${uciToSan(a.fen, line.pv[0])}, evaluation ${formatScore(s)}`);
+    li.onclick = () => playUci(line.pv[0]);
+    li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); } };
     linesEl.appendChild(li);
   }
 }
@@ -542,8 +592,8 @@ function analyse() {
 }
 
 $('depth').oninput = () => { $('depth-out').textContent = $('depth').value; };
-$('depth').onchange = analyse;
-$('multipv').onchange = analyse;
+$('depth').onchange = () => { savePreferences(); analyse(); renderAnalysis(); };
+$('multipv').onchange = () => { savePreferences(); analyse(); renderAnalysis(); };
 
 // ---------- Glue ----------
 
@@ -556,7 +606,62 @@ function positionChanged() {
   renderMoves();
   analyse();
   renderAnalysis();
+  updateWorkspace();
+  saveSession();
 }
+
+function updateWorkspace() {
+  $('top-player').textContent = `${sideName(state.orientation === 'w' ? 'b' : 'w')} pieces`;
+  $('bottom-player').textContent = `${sideName(state.orientation)} pieces`;
+  document.querySelector('.player-strip .player-avatar').textContent = state.orientation === 'w' ? '♚' : '♔';
+  document.querySelector('.bottom-player .player-avatar').textContent = state.orientation === 'w' ? '♔' : '♚';
+  document.querySelector('.player-strip .player-avatar').classList.toggle('white-avatar', state.orientation === 'b');
+  document.querySelector('.bottom-player .player-avatar').classList.toggle('white-avatar', state.orientation === 'w');
+  $('position-status').textContent = gameOverText() || `${sideName(game.turn())} to move${game.inCheck() ? ' · In check' : ''} · Move ${game.moveNumber()}`;
+}
+function saveSession() {
+  try {
+    localStorage.setItem('stockfish-session', JSON.stringify({ startFen: state.startFen, moves: state.moves.map((m) => m.uci), ply: state.ply, orientation: state.orientation }));
+    $('save-state').textContent = 'Saved on this device';
+  } catch { $('save-state').textContent = 'Session only'; }
+}
+function playUci(uci) {
+  if (state.editing || !uci) return;
+  // Engine promotions are explicit, so playing a recommendation needs no picker.
+  if (uci.length === 5) {
+    try {
+      const move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+      state.moves = state.moves.slice(0, state.ply);
+      state.moves.push({ san: move.san, uci, from: move.from, to: move.to, fen: game.fen() });
+      state.ply++; state.selected = null; positionChanged();
+    } catch { toast('That line is no longer available.'); }
+  } else { tryMove(uci.slice(0, 2), uci.slice(2, 4)); }
+}
+$('btn-play-best').onclick = () => { if (state.analysis?.fen === currentFen()) playUci(state.analysis.best || state.lines[0]?.pv[0]); };
+$('btn-theme').onclick = () => {
+  document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  savePreferences();
+};
+$('btn-hints').setAttribute('aria-pressed', String(showHints));
+$('btn-hints').onclick = () => { showHints = !showHints; $('btn-hints').setAttribute('aria-pressed', String(showHints)); renderArrows(); savePreferences(); };
+$('btn-help').onclick = () => { $('shortcut-help').hidden = !$('shortcut-help').hidden; $('btn-help').setAttribute('aria-expanded', String(!$('shortcut-help').hidden)); };
+$('pgn-export').onclick = () => {
+  const exported = new Chess(state.startFen, { skipValidation: true });
+  for (const m of state.moves) exported.move({ from: m.from, to: m.to, promotion: m.uci[4] });
+  const url = URL.createObjectURL(new Blob([exported.pgn()], { type: 'application/x-chess-pgn' }));
+  const link = document.createElement('a'); link.href = url; link.download = 'stockfish-study.pgn'; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Game exported as PGN');
+};
+boardEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const sq = e.target.closest('.sq')?.dataset.square;
+  if (!sq) return;
+  e.preventDefault();
+  if (state.editing) { editClick(sq); return; }
+  if (state.selected && legalTargets(state.selected).includes(sq)) tryMove(state.selected, sq);
+  else { state.selected = game.get(sq)?.color === game.turn() ? sq : null; renderBoard(); }
+});
 
 buildPalette();
 buildBoard();
@@ -571,6 +676,23 @@ const NOTICES = {
     + 'Use the site\'s own analysis once the game is over, or set the position up here by hand.',
 };
 
+// Restore only a replayable game; shared links always take precedence.
+if (!linkedFen && !linkedPgn) {
+  const saved = readSaved('stockfish-session');
+  if (saved && Array.isArray(saved.moves)) {
+    try {
+      const restored = new Chess(saved.startFen);
+      const moves = saved.moves.map((uci) => {
+        const m = restored.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+        return { san: m.san, uci, from: m.from, to: m.to, fen: restored.fen() };
+      });
+      state.startFen = saved.startFen; state.moves = moves;
+      state.ply = Number.isInteger(saved.ply) ? Math.max(0, Math.min(moves.length, saved.ply)) : moves.length;
+      state.orientation = saved.orientation === 'b' ? 'b' : 'w';
+      buildBoard();
+    } catch { /* Ignore an invalid or outdated saved session. */ }
+  }
+}
 positionChanged();
 if (linkedFen) {
   const problem = checkPosition(linkedFen);

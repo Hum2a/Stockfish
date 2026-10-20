@@ -4,17 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Stockfish Analysis Board</title>
+  <meta name="description" content="Your quiet space for deeper chess. Explore positions, follow Stockfish analysis, and study every possibility.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
-    <h1>Stockfish Analysis Board</h1>
-    <span id="engine-status" class="status">Loading engine…</span>
+    <a class="brand" href="./" aria-label="Stockfish home"><span class="brand-mark">♞</span><span>stockfish<span class="brand-sub">CHESS STUDIO</span></span></a>
+    <nav class="top-nav" aria-label="Workspace"><span class="nav-active">Analysis board</span><span class="nav-caption">A little curiosity. A better next move.</span></nav>
+    <button id="btn-theme" class="icon-button" title="Switch colour theme" aria-label="Switch colour theme">◐</button>
   </header>
 
+  <div class="workspace-heading"><div><span class="eyebrow">THE ANALYSIS ROOM</span><h1>See the next possibility<span>.</span></h1><p>Explore a line. Understand a position. Find your edge.</p></div><span id="engine-status" class="status" role="status">Loading engine…</span></div>
   <main class="layout">
     <section class="board-col">
+      <div class="player-strip"><span class="player-avatar">♚</span><div><strong id="top-player">Black pieces</strong><span>Every position has a story</span></div><span class="player-tag">STUDY MODE</span></div>
       <div class="board-row">
         <div class="eval-bar" id="eval-bar" title="Evaluation">
           <div class="eval-fill" id="eval-fill"></div>
@@ -37,6 +41,7 @@
         </div>
       </div>
 
+      <div class="player-strip bottom-player"><span class="player-avatar white-avatar">♔</span><div><strong id="bottom-player">White pieces</strong><span id="position-status" role="status">White to move</span></div><span class="save-state" id="save-state">Saved on this device</span></div>
       <div class="toolbar" id="play-tools">
         <button id="btn-start" title="Go to start (Home)">⏮</button>
         <button id="btn-back" title="Back (←)">◀</button>
@@ -47,6 +52,8 @@
         <button id="btn-edit" title="Set up any position">Set up position</button>
         <button id="btn-reset" title="Reset to the starting position">New game</button>
       </div>
+      <div class="board-options"><button id="btn-hints" aria-pressed="true">↗ Engine arrows</button><span><kbd>←</kbd> <kbd>→</kbd> navigate <span class="shortcut-gap"><kbd>F</kbd> flip</span></span><button id="btn-help" aria-expanded="false" aria-controls="shortcut-help">? Shortcuts</button></div>
+      <div class="shortcut-help" id="shortcut-help" hidden><strong>Make yourself at home</strong><p>← / → Previous / next move · Home / End First / last position · F Flip board · A Toggle engine arrows · Esc Clear selection</p><p>Click or drag pieces to explore. Click an engine line to play its first move. Your game and preferences are saved automatically on this device.</p></div>
 
       <div class="editor" id="editor" hidden>
         <div class="palette" id="palette"></div>
@@ -70,9 +77,11 @@
 
     <section class="side-col">
       <div class="card best">
+        <span class="eyebrow">STOCKFISH INSIGHT</span><span class="insight-symbol" aria-hidden="true">✦</span>
         <div class="best-label" id="best-label">Best move</div>
         <div class="best-move" id="best-move">—</div>
         <div class="best-meta" id="best-meta"></div>
+        <button id="btn-play-best" class="primary" disabled>Play best move <span aria-hidden="true">↗</span></button>
       </div>
 
       <div class="card">
@@ -102,12 +111,12 @@
       </div>
 
       <div class="card">
-        <h2>Moves</h2>
+        <div class="card-head"><h2>Move history</h2><button id="pgn-export" class="text-button">Export PGN ↓</button></div>
         <div class="moves" id="moves"></div>
       </div>
 
       <div class="card">
-        <h2>Position</h2>
+        <div class="card-head"><h2>Bring a position</h2><span class="small-tag">FEN / PGN</span></div>
         <label class="field">FEN
           <div class="inline">
             <input id="fen" spellcheck="false" autocomplete="off">
@@ -123,6 +132,8 @@
       </div>
     </section>
   </main>
+  <footer class="footer"><span>♞ &nbsp; Made for the love of the game.</span><span>Stockfish 19 · Runs on your device</span></footer>
+  <div id="toast" class="toast" role="status" hidden></div>
 
   <script type="module" src="app.js"></script>
 </body>
