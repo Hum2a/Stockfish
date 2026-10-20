@@ -1,0 +1,5 @@
+node_modules/
+# Generated: copied from installed packages by web-app/scripts/vendor.mjs
+web-app/vendor/
+# Generated: node extension/build.mjs
+extension/dist/

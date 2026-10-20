@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stockfish Analysis Board</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Stockfish Analysis Board</h1>
+    <span id="engine-status" class="status">Loading engine…</span>
+  </header>
+
+  <main class="layout">
+    <section class="board-col">
+      <div class="board-row">
+        <div class="eval-bar" id="eval-bar" title="Evaluation">
+          <div class="eval-fill" id="eval-fill"></div>
+          <span class="eval-label" id="eval-label">0.0</span>
+        </div>
+        <div class="board-wrap">
+          <div class="board" id="board"></div>
+          <svg class="arrows" id="arrows" viewBox="0 0 8 8" aria-hidden="true">
+            <defs>
+              <marker id="head-best" markerWidth="3" markerHeight="3" refX="1.6" refY="1.5" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L3,1.5 L0,3 z" class="arrow-head best"/>
+              </marker>
+              <marker id="head-alt" markerWidth="3" markerHeight="3" refX="1.6" refY="1.5" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L3,1.5 L0,3 z" class="arrow-head alt"/>
+              </marker>
+            </defs>
+            <g id="arrow-layer"></g>
+          </svg>
+          <div class="promo" id="promo" hidden></div>
+        </div>
+      </div>
+
+      <div class="toolbar" id="play-tools">
+        <button id="btn-start" title="Go to start (Home)">⏮</button>
+        <button id="btn-back" title="Back (←)">◀</button>
+        <button id="btn-fwd" title="Forward (→)">▶</button>
+        <button id="btn-end" title="Go to end (End)">⏭</button>
+        <span class="sep"></span>
+        <button id="btn-flip" title="Flip board">Flip</button>
+        <button id="btn-edit" title="Set up any position">Set up position</button>
+        <button id="btn-reset" title="Reset to the starting position">New game</button>
+      </div>
+
+      <div class="editor" id="editor" hidden>
+        <div class="palette" id="palette"></div>
+        <div class="editor-row">
+          <label>To move
+            <select id="edit-turn">
+              <option value="w">White</option>
+              <option value="b">Black</option>
+            </select>
+          </label>
+          <button id="edit-startpos">Start position</button>
+          <button id="edit-clear">Clear board</button>
+        </div>
+        <div class="editor-row">
+          <button id="edit-done" class="primary">Done</button>
+          <button id="edit-cancel">Cancel</button>
+          <span class="hint">Click a piece above, then click squares to place it. Click the same piece again to remove it.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="side-col">
+      <div class="card best">
+        <div class="best-label" id="best-label">Best move</div>
+        <div class="best-move" id="best-move">—</div>
+        <div class="best-meta" id="best-meta"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Side to move</h2>
+          <div class="seg" role="radiogroup" aria-label="Side to move">
+            <button id="turn-w" role="radio">White</button>
+            <button id="turn-b" role="radio">Black</button>
+          </div>
+        </div>
+        <p class="note">Switch sides to see the best move for either colour in the current position.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Engine lines</h2>
+          <div class="settings">
+            <label>Depth <input type="range" id="depth" min="8" max="30" value="20"><output id="depth-out">20</output></label>
+            <label>Lines
+              <select id="multipv">
+                <option>1</option><option selected>3</option><option>5</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <ol class="lines" id="lines"></ol>
+      </div>
+
+      <div class="card">
+        <h2>Moves</h2>
+        <div class="moves" id="moves"></div>
+      </div>
+
+      <div class="card">
+        <h2>Position</h2>
+        <label class="field">FEN
+          <div class="inline">
+            <input id="fen" spellcheck="false" autocomplete="off">
+            <button id="fen-load">Load</button>
+            <button id="fen-copy">Copy</button>
+          </div>
+        </label>
+        <label class="field">PGN
+          <textarea id="pgn" rows="4" spellcheck="false" placeholder="Paste a game (PGN) and press Load"></textarea>
+        </label>
+        <button id="pgn-load">Load PGN</button>
+        <p class="error" id="error" role="alert"></p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

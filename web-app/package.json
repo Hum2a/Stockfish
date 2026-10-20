@@ -1,0 +1,19 @@
+{
+  "name": "stockfish-analysis-board",
+  "version": "1.0.0",
+  "description": "Local Stockfish analysis board",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/",
+    "postinstall": "node scripts/vendor.mjs"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "stockfish": "^19.0.1"
+  },
+  "private": true
+}
