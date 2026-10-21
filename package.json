@@ -3,11 +3,15 @@
   "private": true,
   "description": "Stockfish analysis board (web app + browser extension) for chess teaching",
   "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
     "web-app",
     "extension"
   ],
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "start": "npm run start -w web-app",
     "build": "npm run build -w extension",
     "test": "npm run build && npm test --workspaces",

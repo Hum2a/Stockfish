@@ -7,7 +7,7 @@ A local analysis board for teaching. Set up or paste any position, choose which 
 From the repo root:
 
 ```sh
-npm install
+npm run setup
 npm start
 ```
 

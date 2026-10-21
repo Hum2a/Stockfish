@@ -10,17 +10,37 @@ Chess analysis tools built on Stockfish 19, for teaching.
 
 ## Setup
 
+Install **Node.js 22 or newer** (including npm) and Git, then run:
+
 ```sh
-git clone --recurse-submodules <this repo>
-npm install
+git clone https://github.com/Hum2a/Stockfish.git
+cd Stockfish
+npm run setup
+npm start
 ```
 
-`npm install` installs both workspaces and copies the engine and chess.js into `web-app/vendor/`.
+Open <http://localhost:8080>. `npm run setup` works on Windows, macOS, and Linux, before installing any dependencies. It installs exact app versions from the lockfile, creates `.env` from `.env.example` if missing, generates `web-app/vendor/`, builds `web-app/dist/` and `extension/dist/`, and runs the app and extension tests. Rerunning it preserves your existing `.env` and rebuilds generated files. Internet access is required for dependency downloads.
+
+No API keys are required. The local server automatically reads the root `.env`; change `PORT` there if needed. Existing shell environment variables take priority. `.env` stays out of Git. Browser game history, Cloudflare credentials, and machine-specific caches are personal state, not shared setup files. Deployment caches under `deploy/.cloudflare/` are recreated by the deployment commands.
+
+Allow free disk space on both the project drive and the npm cache drive for the engine and deployment-tool downloads. If installation fails, fix the reported issue and rerun the same setup command.
+
+The upstream Stockfish Git submodule is reference source; the apps use the npm WebAssembly build. To fetch that source too, use `npm run setup -- --with-source`. Deployment tools are optional: `npm run setup -- --with-deploy` also installs exact versions from `deploy/package-lock.json`. For everything, including upstream source and deployment tools, run `npm run setup -- --with-deploy --with-source`. If you use nvm, `.nvmrc` selects Node 22. Browser extension installation remains a manual browser step: load `extension/dist/` through **Load unpacked**.
+
+After pulling updates:
+
+```sh
+git pull
+npm run setup
+```
+
+Then reload the extension in `chrome://extensions`. Setup does not sign in or publish anything. To deploy, first run setup with `--with-deploy`; deploying requires your own Cloudflare authentication and adapting `deploy/cloudflare.config.ts` to a domain/account you control. The checked-in configuration targets the original project's domain.
 
 ## Commands (run from this folder)
 
 | Command | Does |
 | --- | --- |
+| `npm run setup` | Installs dependencies, creates local configuration, generates both builds, and runs tests |
 | `npm start` | Runs the web app at http://localhost:8080 |
 | `npm run build` | Builds the extension into `extension/dist/` |
 | `npm test` | Builds the extension, then runs every workspace's tests |

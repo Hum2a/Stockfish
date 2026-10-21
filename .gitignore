@@ -1,4 +1,8 @@
 node_modules/
+# Local configuration; keep only the shareable example in Git.
+.env
+.env.*
+!.env.example
 # Generated: copied from installed packages by web-app/scripts/vendor.mjs
 web-app/vendor/
 # Generated: node extension/build.mjs

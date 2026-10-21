@@ -6,6 +6,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
+try {
+  process.loadEnvFile(path.join(ROOT, '..', '.env'));
+} catch (err) {
+  if (err.code !== 'ENOENT') throw err;
+}
 const PORT = Number(process.env.PORT) || 8080;
 
 const MIME = {

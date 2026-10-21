@@ -26,9 +26,9 @@ The source reader also supports Chessground-style boards, `data-fen` boards, and
 
 ## Install
 
-1. From the repo root, run `npm install` (this fetches Stockfish and chess.js).
-2. From the repo root, run `npm run build`. That creates `extension/dist/`.
-3. Open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked**, and choose the `dist` folder.
+1. Install Node.js 22 or newer and clone the repository.
+2. From the repo root, run `npm run setup`. This installs dependencies, configures the local environment, builds `extension/dist/` and the website, and runs tests.
+3. Open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked**, and choose `extension/dist/`.
 
 After changing anything in `web-app` or `src`, run `npm run build` again and press the reload button on the extension card.
 
