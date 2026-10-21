@@ -9,7 +9,17 @@ export function readBoard(boardIndex = 0) {
   const candidates = [...document.querySelectorAll('wc-chess-board, chess-board, cg-board, [data-fen], [class*="board-b72b1"], [data-chess-board]')]
     .filter(visible).filter((el, i, all) => !all.some((other, j) => i !== j && el.contains(other))).slice(0, 16);
   const root = candidates[boardIndex];
-  if (!root) return { error: candidates.length ? 'That board is no longer visible. Select it again.' : 'No supported board found. Open a Chess.com board, Chessground board, or a board exposing data-fen.', boardCount: candidates.length };
+  if (!root) {
+    const chessCom = /(^|\.)chess\.com$/i.test(location.hostname);
+    return {
+      error: candidates.length
+        ? 'That board is no longer visible. Select it again.'
+        : chessCom
+          ? 'No chessboard on this Chess.com page. Open Analysis, a live game, or a replay — not the homepage — then click the extension again.'
+          : 'No supported board found. Open a Chess.com board, Chessground board, or a board exposing data-fen.',
+      boardCount: candidates.length,
+    };
+  }
   const orientation = root.closest('.flipped, .orientation-black, [data-orientation="black"]') ? 'b' : 'w';
   const base = { orientation, boardCount: candidates.length, boardIndex, host: location.hostname };
   const fen = root.closest('[data-fen]')?.getAttribute('data-fen');

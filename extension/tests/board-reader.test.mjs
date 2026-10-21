@@ -21,10 +21,10 @@ function root(type, pieces, { flipped = false, fen = null } = {}) {
   };
   return result;
 }
-function use(roots) {
+function use(roots, hostname = 'www.chess.com') {
   globalThis.document = { querySelectorAll: () => roots };
   globalThis.getComputedStyle = () => ({ display: 'block', visibility: 'visible' });
-  globalThis.location = { hostname: 'www.chess.com' };
+  globalThis.location = { hostname };
 }
 test('Chess.com square classes are orientation independent; multiple boards can be selected', () => {
   use([root('wc-chess-board', [piece('piece wk square-51'), piece('piece bk square-58')], { flipped: true }), root('wc-chess-board', [piece('piece wk square-41'), piece('piece bk square-48')])]);
@@ -49,5 +49,6 @@ test('annotated FEN boards preserve turn, castling, en passant and counters', ()
   const fen = '4k3/8/8/8/8/8/8/4K3 b - - 0 14';
   use([root('board', [], { fen })]);
   assert.equal(readBoard().fen, fen);
-  use([]); assert.match(readBoard().error, /No supported board/);
+  use([]); assert.match(readBoard().error, /Analysis, a live game, or a replay/);
+  use([], 'lichess.org'); assert.match(readBoard().error, /No supported board/);
 });

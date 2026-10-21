@@ -4,6 +4,7 @@
   "version": "1.1.0",
   "description": "Stockfish chess studio with opt-in tracking of a selected chessboard tab for analysis and recording.",
   "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "content_scripts": [{
     "matches": ["https://stockfish.humza.website/*", "http://localhost/*", "http://127.0.0.1/*"],
     "js": ["studio-bridge.js"],

@@ -19,6 +19,12 @@ globalThis.chrome = {
   },
   scripting: { executeScript: async ({ target, args }) => {
     reads++;
+    if (target.tabId === 42) {
+      return [
+        { result: { error: 'No supported board found.', boardCount: 0 } },
+        { result: { boardCount: 1, host: 'www.chess.com', placement: '4k3/8/8/8/8/8/8/4K3', allFrames: target.allFrames, source: target.tabId, index: args[0] } },
+      ];
+    }
     return [{ result: { boardCount: 2, host: 'www.chess.com', source: target.tabId, index: args[0] } }];
   } },
   storage: { session: {
@@ -56,6 +62,11 @@ test('website sessions bind to their viewer; Stop revokes access immediately', a
   assert.equal(result.source, 7); assert.equal(result.index, 1);
   await handleTrackerMessage({ type: 'tracker-stop', session }, { tab: { id: 99 } });
   await assert.rejects(handleTrackerMessage(message, { tab: { id: 99 } }), /ended/);
+});
+test('board reads search nested frames, not only the top page', async () => {
+  const result = await inspectBoard(42, 0);
+  assert.equal(result.allFrames, true);
+  assert.equal(result.placement, '4k3/8/8/8/8/8/8/4K3');
 });
 test('extension pages can follow without sender.tab and sessions are stored outside worker memory', async () => {
   await handleTrackerMessage({ type: 'tracker-start', tabId: 8, boardIndex: 0 }, popup);

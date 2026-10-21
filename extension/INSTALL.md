@@ -40,6 +40,16 @@ That `extension/dist` folder is what the browser loads. Do not pick `extension` 
 
 Click the extension icon, then **Open studio without tracking**. The analysis board should open. To follow a live game, open a Chess.com board tab, click the extension again, and choose **Start tracking**.
 
+## Using it on Chess.com
+
+Do not try to install the extension from Chess.com itself. After it is loaded unpacked:
+
+1. Open a page that already shows a board, such as [chess.com/analysis](https://www.chess.com/analysis) or an in-progress game.
+2. Click the Stockfish toolbar icon **on that tab**.
+3. Choose **Start tracking**. If Chrome asks to allow access to chess.com, click **Allow**.
+
+The Chess.com homepage, news pages, and Play lobby before a game starts have no board the extension can read.
+
 ## 3. After you change code
 
 ```sh
@@ -60,5 +70,6 @@ After `git pull`, run `npm install` if dependencies changed, then `npm run build
 | `Node.js 22 or newer is required` | Install Node 22+ (see `.nvmrc`) and open a new terminal. |
 | Extension card shows an error after a rebuild | Click **Reload**. If it persists, **Remove** the extension and **Load unpacked** again. |
 | Studio opens but the engine never starts | Rebuild (`npm run build`) and confirm `extension/dist/vendor/` contains the `.wasm` file, then reload. |
+| Popup says no chessboard on Chess.com | Open [chess.com/analysis](https://www.chess.com/analysis) or a game that already shows pieces, then click the extension on **that** tab. Reload the unpacked extension after rebuilding. |
 
 Firefox can load `extension/dist/manifest.json` as a temporary add-on from `about:debugging#/runtime/this-firefox`, but it is cleared when Firefox restarts. Chrome, Edge, and Brave are the supported local install path.

@@ -1,5 +1,7 @@
 import { looksLikeFen } from './chess-utils.js';
-import { readBoard } from './board-reader.js';
+import { inspectBoard } from './inspect.js';
+
+export { inspectBoard };
 
 const boardUrl = (query = '') => chrome.runtime.getURL(`analysis.html${query}`);
 
@@ -21,13 +23,7 @@ chrome.contextMenus.onClicked.addListener((info) => {
 
 const sessionKey = (session) => `tracker:${session}`;
 const validSession = (session) => typeof session === 'string' && /^[a-f0-9-]{36}$/.test(session);
-const popupSender = (sender) => sender.id === chrome.runtime.id && sender.url === chrome.runtime.getURL('popup.html');
-
-export async function inspectBoard(tabId, boardIndex = 0) {
-  if (!Number.isInteger(tabId) || !Number.isInteger(boardIndex) || boardIndex < 0 || boardIndex > 15) throw new Error('Invalid board selection.');
-  const results = await chrome.scripting.executeScript({ target: { tabId }, func: readBoard, args: [boardIndex] });
-  return results[0]?.result || { error: 'This page cannot be read. Open a supported chessboard and try again.' };
-}
+const popupSender = (sender) => sender.id === chrome.runtime.id && (sender.url || '').split(/[?#]/)[0] === chrome.runtime.getURL('popup.html');
 
 export async function handleTrackerMessage(message, sender) {
   if (message.type === 'tracker-ping') return { available: true, version: chrome.runtime.getManifest().version };

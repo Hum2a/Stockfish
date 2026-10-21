@@ -18,7 +18,7 @@ The source reader also supports Chessground-style boards, `data-fen` boards, and
 
 ## Access and data
 
-- `activeTab` and `scripting` read only the tab you select with the toolbar, using temporary access. No blanket host access to chess sites is requested.
+- `activeTab` and `scripting` read only the tab you select with the toolbar, using temporary access. Starting tracking may ask for optional access to that site so the studio can keep reading after the popup closes. No blanket host access is requested at install time.
 - `storage` keeps source/viewer session bindings in browser-session storage so service-worker restarts do not lose the connection. Closing the source or viewer clears its binding.
 - A content script on `stockfish.humza.website`, `localhost`, and `127.0.0.1` relays the studio's tracking requests. Each web session is restricted to the viewer tab that started it. This bridge cannot select arbitrary tabs or inject arbitrary code.
 - The source reader returns only board positions, orientation, adapter name and hostname. It never clicks the source board or makes moves. Positions are analyzed locally; tracking sessions are not sent to a backend.
