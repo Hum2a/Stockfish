@@ -57,6 +57,7 @@ try {
 
     console.log('\nSetup complete.\n\nStart the website: npm start\nServer settings: .env (PORT defaults to 8080)\nLoad the extension: chrome://extensions > Developer mode > Load unpacked');
     console.log(`Extension directory: ${path.join(root, 'extension', 'dist')}`);
+    console.log('Local install guide: extension/INSTALL.md');
     console.log('Website build: web-app/dist');
     console.log(args.includes('--with-deploy') ? '\nDeployment tools are installed.' : '\nOptional deployment tools: npm run setup -- --with-deploy');
     console.log('Deploying requires your own Cloudflare login and a domain/account configuration you control. Setup does not log in or deploy.\nAfter pulling updates, rerun npm run setup, then reload the unpacked extension.');

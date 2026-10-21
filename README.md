@@ -25,7 +25,7 @@ No API keys are required. The local server automatically reads the root `.env`; 
 
 Allow free disk space on both the project drive and the npm cache drive for the engine and deployment-tool downloads. If installation fails, fix the reported issue and rerun the same setup command.
 
-The upstream Stockfish Git submodule is reference source; the apps use the npm WebAssembly build. To fetch that source too, use `npm run setup -- --with-source`. Deployment tools are optional: `npm run setup -- --with-deploy` also installs exact versions from `deploy/package-lock.json`. For everything, including upstream source and deployment tools, run `npm run setup -- --with-deploy --with-source`. If you use nvm, `.nvmrc` selects Node 22. Browser extension installation remains a manual browser step: load `extension/dist/` through **Load unpacked**.
+The upstream Stockfish Git submodule is reference source; the apps use the npm WebAssembly build. To fetch that source too, use `npm run setup -- --with-source`. Deployment tools are optional: `npm run setup -- --with-deploy` also installs exact versions from `deploy/package-lock.json`. For everything, including upstream source and deployment tools, run `npm run setup -- --with-deploy --with-source`. If you use nvm, `.nvmrc` selects Node 22. To load the extension in Chrome or Edge, see [Install the extension locally](extension/INSTALL.md).
 
 After pulling updates:
 
@@ -42,10 +42,21 @@ Then reload the extension in `chrome://extensions`. Setup does not sign in or pu
 | --- | --- |
 | `npm run setup` | Installs dependencies, creates local configuration, generates both builds, and runs tests |
 | `npm start` | Runs the web app at http://localhost:8080 |
-| `npm run build` | Builds the extension into `extension/dist/` |
+| `npm run build` | Builds the loadable browser extension into `extension/dist/` |
+| `npm run build:extension` | Same as `npm run build` |
+| `npm run build:web` | Builds the website into `web-app/dist/` |
 | `npm test` | Builds the extension, then runs every workspace's tests |
 
-To install the extension, run `npm run build`, open `chrome://extensions`, turn on Developer mode, click **Load unpacked**, and pick `extension/dist`.
+## Install the extension locally
+
+Full walkthrough: [extension/INSTALL.md](extension/INSTALL.md)
+
+```sh
+npm install
+npm run build
+```
+
+Then open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked**, and select the `extension/dist` folder.
 
 ## Chess studio
 

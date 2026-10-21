@@ -26,11 +26,16 @@ The source reader also supports Chessground-style boards, `data-fen` boards, and
 
 ## Install
 
-1. Install Node.js 22 or newer and clone the repository.
-2. From the repo root, run `npm run setup`. This installs dependencies, configures the local environment, builds `extension/dist/` and the website, and runs tests.
-3. Open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked**, and choose `extension/dist/`.
+Step-by-step: [INSTALL.md](INSTALL.md)
 
-After changing anything in `web-app` or `src`, run `npm run build` again and press the reload button on the extension card.
+```sh
+npm install
+npm run build
+```
+
+Then open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked**, and choose `extension/dist/`.
+
+After changing anything in `web-app` or `src`, run `npm run build` again and press **Reload** on the extension card.
 
 Version 1.1.0 adds permissions and a website bridge. Reload the unpacked extension, review any browser prompt, then reload an already-open website studio so the bridge is available. Tracking sessions must be restarted after reloading the extension or restarting the browser.
 

@@ -13,7 +13,10 @@
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "start": "npm run start -w web-app",
-    "build": "npm run build -w extension",
+    "vendor": "node web-app/scripts/vendor.mjs",
+    "build": "npm run build:extension",
+    "build:extension": "npm run build -w extension",
+    "build:web": "npm run build -w web-app",
     "test": "npm run build && npm test --workspaces",
     "deploy": "npm run deploy --prefix deploy",
     "deploy:check": "npm run check --prefix deploy"
