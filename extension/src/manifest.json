@@ -1,15 +1,21 @@
 {
   "manifest_version": 3,
   "name": "Stockfish Analysis Board",
-  "version": "1.0.0",
-  "description": "Stockfish 19 analysis board for studying and teaching. It has no access to websites and never interacts with games.",
-  "permissions": ["contextMenus"],
+  "version": "1.1.0",
+  "description": "Stockfish chess studio with opt-in tracking of a selected chessboard tab for analysis and recording.",
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+  "content_scripts": [{
+    "matches": ["https://stockfish.humza.website/*", "http://localhost/*", "http://127.0.0.1/*"],
+    "js": ["studio-bridge.js"],
+    "run_at": "document_start"
+  }],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "Open the Stockfish analysis board",
+    "default_title": "Stockfish studio · Follow this board",
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

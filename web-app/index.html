@@ -16,6 +16,29 @@
   </header>
 
   <div class="workspace-heading"><div><span class="eyebrow">THE ANALYSIS ROOM</span><h1>See the next possibility<span>.</span></h1><p>Explore a line. Understand a position. Find your edge.</p></div><span id="engine-status" class="status" role="status">Loading engine…</span></div>
+  <section class="tracking-panel" aria-label="Tab tracking">
+    <div class="tracking-header"><span class="tracking-icon" aria-hidden="true">◉</span><div class="tracking-copy"><strong>Follow a board</strong><p id="tracking-status" role="status">Your analysis, in step with another tab.</p></div><button id="tracking-help" aria-expanded="false" aria-controls="tracking-guide">Connect a tab ↗</button><button id="tracking-follow" hidden aria-pressed="true">Following</button><button id="tracking-stop" hidden>Stop tracking</button></div>
+    <div id="tracking-guide" hidden><p>Open a chessboard tab, click the Stockfish extension, choose <strong>Extension studio</strong> or <strong>stockfish.humza.website</strong>, then <strong>Start tracking</strong>. Keep the source tab open. To change boards, start again from the other tab.</p><p>Supports Chess.com, Chessground-style boards, and boards exposing FEN or annotated squares. Video, canvas-only, and embedded boards need a separate adapter.</p></div>
+    <details id="tracking-setup" hidden>
+      <summary>Position setup &amp; recovery</summary>
+      <p class="note">When joining midgame, set the side to move and available castling rights. Resync starts a new captured game. En passant and earlier move counters are unknown unless the source supplies a complete FEN.</p>
+      <div class="tracking-settings">
+        <label>Side to move<select id="tracking-turn"><option value="auto">Detect from full FEN / start</option><option value="w">White</option><option value="b">Black</option></select></label>
+        <label>Castling rights<select id="tracking-castling">
+          <option value="-">None / unknown</option><option value="KQkq">Both sides · both wings</option>
+          <option value="KQ">White · both wings</option><option value="kq">Black · both wings</option>
+          <option value="K">White · kingside</option><option value="Q">White · queenside</option>
+          <option value="k">Black · kingside</option><option value="q">Black · queenside</option>
+          <option value="KQk">White both · Black kingside</option><option value="KQq">White both · Black queenside</option>
+          <option value="Kkq">White kingside · Black both</option><option value="Qkq">White queenside · Black both</option>
+          <option value="Kk">Both kingsides</option><option value="Qq">Both queensides</option>
+          <option value="Kq">White kingside · Black queenside</option><option value="Qk">White queenside · Black kingside</option>
+        </select></label>
+        <button id="tracking-resync">Resync position</button>
+        <label class="tracking-mirror"><input type="checkbox" id="tracking-mirror" checked> Match source orientation</label>
+      </div>
+    </details>
+  </section>
   <main class="layout">
     <section class="board-col">
       <div class="player-strip"><span class="player-avatar">♚</span><div><strong id="top-player">Black pieces</strong><span>Every position has a story</span></div><span class="player-tag">STUDY MODE</span></div>

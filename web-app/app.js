@@ -1,11 +1,13 @@
 import { Chess } from './vendor/chess.js';
 import { Engine } from './engine.js';
+import { setupTracker } from './tracker.js';
 import {
   START_FEN, FILES, normalizeFen, fenWithTurn, checkPosition, boardToFen, fenToBoard,
   pvToSan, uciToSan, whiteScore, formatScore, whitePercent,
 } from './chess-utils.js';
 
 const $ = (id) => document.getElementById(id);
+let trackingUnavailable = /^[a-f0-9-]{36}$/.test(new URLSearchParams(location.hash.slice(1)).get('follow') || '');
 const readSaved = (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
 const preferences = readSaved('stockfish-preferences') || {};
 document.documentElement.dataset.theme = preferences.theme === 'dark' ? 'dark' : 'light';
@@ -491,6 +493,15 @@ function renderAnalysis() {
   const linesEl = $('lines');
   const over = gameOverText();
   $('btn-play-best').disabled = state.editing || !!over || !state.lines[0] || state.analysis?.fen !== currentFen();
+  if (trackingUnavailable) {
+    $('best-label').textContent = 'Source connection';
+    $('best-move').textContent = '—';
+    $('best-meta').textContent = 'Waiting for a synchronized source position.';
+    $('btn-play-best').disabled = true;
+    linesEl.innerHTML = '<li class="empty">Connect or resync the source board to analyse.</li>';
+    renderEvalBar(null);
+    return;
+  }
 
   if (state.editing) {
     $('best-label').textContent = 'Setting up a position';
@@ -581,7 +592,7 @@ const engine = new Engine({
 });
 
 function analyse() {
-  if (state.editing || gameOverText()) {
+  if (trackingUnavailable || state.editing || gameOverText()) {
     engine.stop();
     return;
   }
@@ -707,3 +718,35 @@ if (linkedFen) {
   showError(loadPgnText(linkedPgn));
 }
 if (NOTICES[params.get('notice')]) showError(NOTICES[params.get('notice')]);
+
+const tracker = setupTracker({
+  apply(result) {
+    trackingUnavailable = false;
+    if (state.editing) {
+      state.editing = false; $('editor').hidden = true; $('play-tools').hidden = false;
+    }
+    if (result.orientation && result.orientation !== state.orientation) {
+      state.orientation = result.orientation; buildBoard();
+    }
+    state.startFen = result.startFen; state.moves = result.moves; state.ply = result.ply; state.selected = null;
+    showError(''); positionChanged();
+  },
+  setFollowing() {
+    const wasUnavailable = trackingUnavailable;
+    trackingUnavailable = false;
+    if (wasUnavailable) { analyse(); renderAnalysis(); }
+  },
+  onDisconnected() {
+    trackingUnavailable = true; engine.stop(); state.lines = []; state.analysis = null;
+    renderAnalysis(); renderArrows();
+  },
+});
+// Local exploration pauses mirroring but keeps capturing source history.
+boardEl.addEventListener('pointerdown', () => tracker.explore(), { capture: true });
+boardEl.addEventListener('keydown', (e) => { if (['Enter', ' '].includes(e.key)) tracker.explore(); }, { capture: true });
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#play-tools button, #turn-w, #turn-b, #fen-load, #pgn-load, #btn-play-best, #lines [role="button"], #moves [role="button"]')) tracker.explore();
+}, { capture: true });
+document.addEventListener('keydown', (e) => {
+  if (!e.target.closest('input, textarea, select') && ['ArrowLeft', 'ArrowRight', 'Home', 'End', 'f'].includes(e.key)) tracker.explore();
+}, { capture: true });

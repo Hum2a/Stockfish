@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Follow a board · Stockfish</title><link rel="stylesheet" href="popup.css"></head>
+<body><header><span class="mark">♞</span><div><strong>stockfish</strong><small>YOUR RECORDING COMPANION</small></div></header>
+<h1>Follow the game.</h1><p>Keep your analysis board in step with this tab.</p>
+<div id="source" role="status">Looking for a chessboard…</div>
+<label>Board<select id="board"><option value="0">Main board</option></select></label>
+<label>Open in<select id="destination"><option value="extension">Extension studio · works offline</option><option value="website">stockfish.humza.website</option></select></label>
+<button id="start" class="primary" disabled>Start tracking ↗</button><button id="open">Open studio without tracking</button>
+<p class="foot">Only this selected tab is read. Stop at any time in the studio. Board positions stay in your browser.</p>
+<script type="module" src="popup.js"></script></body></html>

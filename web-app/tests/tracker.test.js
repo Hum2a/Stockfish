@@ -1,0 +1,58 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { Chess } from '../vendor/chess.js';
+
+test('controller follows stable snapshots, captures while exploring, recovers, and ignores late responses after Stop', async (t) => {
+  const elements = new Map();
+  const element = (id) => {
+    if (!elements.has(id)) elements.set(id, { hidden: true, dataset: {}, value: id === 'tracking-turn' ? 'auto' : '-', checked: true, setAttribute() {} });
+    return elements.get(id);
+  };
+  globalThis.document = { getElementById: element, querySelector: element };
+  globalThis.window = { addEventListener() {}, postMessage() {} };
+  globalThis.location = { protocol: 'chrome-extension:', hash: '#follow=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', pathname: '/analysis.html', search: '' };
+  globalThis.history = { replaceState() {} };
+  const game = new Chess();
+  const snap = () => ({ placement: game.fen().split(' ')[0], fen: null, orientation: 'w', host: 'www.chess.com', adapter: 'Chess.com' });
+  let source = snap();
+  let delayedRead = null;
+  const reads = [];
+  globalThis.chrome = { runtime: { sendMessage: async (message) => {
+    reads.push(message.type);
+    if (message.type === 'tracker-stop') return { ok: true };
+    if (delayedRead) return new Promise((resolve) => { delayedRead.resolve = resolve; });
+    return source;
+  } } };
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { setupTracker } = await import('../tracker.js');
+  const applied = [];
+  const following = [];
+  let disconnected = 0;
+  const tracker = setupTracker({ apply: (result) => applied.push(result), setFollowing: (value) => following.push(value), onDisconnected: () => { disconnected++; } });
+  const settle = async () => { for (let i = 0; i < 10; i++) await Promise.resolve(); };
+  const poll = async () => { t.mock.timers.tick(800); await settle(); };
+  await settle(); await poll();
+  assert.equal(applied.length, 1);
+  tracker.explore();
+  assert.equal(following.at(-1), false);
+  game.move('e4'); source = snap();
+  await poll(); await poll();
+  assert.equal(applied.length, 1, 'exploration is not overwritten by source updates');
+  element('tracking-follow').onclick();
+  assert.equal(applied.at(-1).moves[0].san, 'e4');
+  source = { error: 'Source tab disconnected' };
+  const beforeError = disconnected;
+  await poll();
+  assert.ok(disconnected > beforeError);
+  source = snap(); await poll();
+  assert.equal(following.at(-1), true, 'recovery works even when the board has not changed');
+  delayedRead = {};
+  await poll();
+  const appliedBeforeStop = applied.length;
+  await element('tracking-stop').onclick();
+  game.move('e5'); delayedRead.resolve(snap()); await settle();
+  assert.equal(applied.length, appliedBeforeStop, 'late source updates cannot restart a stopped session');
+  assert.equal(element('tracking-stop').hidden, true);
+  const count = reads.length; await poll();
+  assert.equal(reads.length, count, 'stopping cancels subsequent polls');
+});

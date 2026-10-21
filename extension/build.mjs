@@ -16,7 +16,7 @@ if (!fs.existsSync(path.join(webApp, 'vendor', 'stockfish-19-lite-single.wasm'))
 fs.rmSync(dist, { recursive: true, force: true });
 fs.cpSync(path.join(here, 'src'), dist, { recursive: true });
 fs.cpSync(path.join(webApp, 'vendor'), path.join(dist, 'vendor'), { recursive: true });
-for (const file of ['app.js', 'engine.js', 'chess-utils.js', 'style.css']) {
+for (const file of ['app.js', 'engine.js', 'chess-utils.js', 'tracker.js', 'tracked-game.js', 'style.css']) {
   fs.copyFileSync(path.join(webApp, file), path.join(dist, file));
 }
 fs.copyFileSync(path.join(webApp, 'index.html'), path.join(dist, 'analysis.html'));
